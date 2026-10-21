@@ -1,0 +1,9 @@
+*
+!Dockerfile
+!docker/
+!boiii-server-files.zip
+!UnrankedServer/
+UnrankedServer/**/*.ff
+UnrankedServer/**/*.fd
+UnrankedServer/**/*.exe
+UnrankedServer/**/*.dll

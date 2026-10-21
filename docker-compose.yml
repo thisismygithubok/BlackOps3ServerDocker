@@ -1,0 +1,18 @@
+services:
+  bo3:
+    image: thisismynameok/bo3-server-docker:latest
+    container_name: bo3
+    network_mode: host        # recommended: no port mapping needed
+    init: true                # forwards docker stop to wine
+    stdin_open: true          # `docker attach bo3` for the server console (detach: Ctrl-P Ctrl-Q)
+    tty: true
+    restart: unless-stopped
+    command: boiii            # boiii (EZZBOIII) | t7x | vanilla (Valve's server, MP only). Players must use the same client.
+    environment:
+      GAME_PORT: 27017
+      SERVER_CONFIG: server_zm.cfg   # server_zm.cfg (zombies) | server.cfg (MP) | server_cp.cfg (coop campaign)
+      MOD_ID: ""
+      STEAM_USER: ""          # required for install: a Steam account that owns BO3 (anonymous is refused)
+    volumes:
+      - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
+      - ./home:/home/bo3      # Wine prefix + cached Steam login
