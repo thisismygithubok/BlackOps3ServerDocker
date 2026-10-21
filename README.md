@@ -198,6 +198,8 @@ The native macOS version of Black Ops 3 can't run these clients. Use [CrossOver]
 Performance depends on your Mac. If the game doesn't start, change the bottle's graphics backend from D3DMetal to DXVK.
 
 ## EZZBOIII Server Additional Steps
+*Only for the Windows/Linux script installs. The Docker image does this automatically.*
+
 EZZBOIII requires some additional files in your `%APPDATA%/Local` folder to create a new server. Extract [`boiii-server-files.zip`](https://github.com/framilano/BlackOps3ServerInstaller/blob/main/boiii-server-files.zip) and move the extracted `boiii` folder:
 - Windows: in your `%APPDATA%/Local` folder
 - Linux: open your wine prefix and copy the `boiii` folder in `AppData/Local` folder present in it
