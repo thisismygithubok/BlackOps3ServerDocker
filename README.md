@@ -133,7 +133,7 @@ docker logs -f bo3
 ```
 The first start takes a little longer while the Wine prefix is created. The server console is mirrored into the container logs. A line like `InitGame: map zm_genesis; gametype zclassic;` means the map loaded. Lots of `Could not find fx/weapon "..."` lines are normal. The shared Zombies scripts look up assets from every map, and only the loaded map's assets exist.
 
-### Custom maps
+### Hosting custom maps
 1. Find the map on the [Steam Workshop](https://steamcommunity.com/app/311210/workshop/) and copy the number at the end of its URL (`?id=<number>`).
 2. Download it with DepotDownloader:
    ```bash
@@ -185,7 +185,7 @@ connect <server-address>:27017
 ```
 You can also find the server by name in the client's server browser.
 
-### Custom maps
+### Getting custom maps
 Subscribe to the same map on the [Steam Workshop](https://steamcommunity.com/app/311210/workshop/) and let Steam download it before you join. If the client can't find the map, copy it from `Steam/steamapps/workshop/content/311210/<number>` into `<Black Ops 3 folder>/usermaps/<codename>/`.
 
 ### Playing on a Mac
@@ -205,6 +205,8 @@ EZZBOIII requires some additional files in your `%APPDATA%/Local` folder to crea
 - Linux: open your wine prefix and copy the `boiii` folder in `AppData/Local` folder present in it
 
 ## Cool, but Zombies?
+*Docker: you need the same files, but DepotDownloader fetches them for you. See [3. Add the Zombies map files](#3-add-the-zombies-map-files).*
+
 The default server files only downloads MP-ready stuff. To serve a Zombies server you need to copy these fast files
 from your BO3 game files and put them into `zone`:
 
@@ -227,6 +229,8 @@ zone/zm_zod_patch.ff
 ```
 
 ## Mods?
+*Docker: put the mod in `server/UnrankedServer/mods/<id>/` the same way, but set `MOD_ID: "<id>"` in `docker-compose.yml` instead of editing `CustomClient_Server.bat`.*
+
 There's a difference between Custom Maps and Mods, this section will explain how to load a mod downloaded from the Steam Workshop.
 Let's say you subscribed to the [The Kermit Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=1638465081), this will create a folder in your Steam folder in `steamapps/workshop/content/311210/1638465081`, create a new `mods` folder inside the root of your server folder (in UnrankedServer) and copy the folder named `1638465081` (this number changes depending on the mod) inside it. The resulting folders structure should look like this:
 
@@ -235,6 +239,8 @@ Let's say you subscribed to the [The Kermit Mod](https://steamcommunity.com/shar
 Now modify the `set ModFolderName=` in `CustomClient_Server.bat` into `set ModFolderName=1638465081`, that's it, you're done!
 
 ## Custom Maps?
+*Docker: see [Hosting custom maps](#hosting-custom-maps). The folder layout is the same, inside `server/UnrankedServer/`.*
+
 This section will explain how to load custom maps downloaded from the Steam Workshop.
 Let's say you downloaded the [Mob of the Dead](https://steamcommunity.com/sharedfiles/filedetails/?id=3373649394) custom map and want to host a server with it, create the `usermaps` folder inside the root of your server folder (in UnrankedServer) and create a folder within it called `zm_prison` (the map codename, easily guess the name from the map gamefiles), put all map files inside this folder.
 
@@ -249,9 +255,9 @@ That's it
 
 ## Notes
 1. Unless you're playing LAN with friends, you need to port forward you router and open the ports used by your server in Windows Firewall.
-2. If you don't need any custom client, just delete `t7x.exe` or `boiii.exe`.
-3. Remember to change the port in `CustomClient_Server.bat` if you're launching the server in the same machine where you're playing Black Ops 3.
+2. If you don't need any custom client, just delete `t7x.exe` or `boiii.exe`. *(Script installs only: in Docker, `update` downloads them again.)*
+3. Remember to change the port in `CustomClient_Server.bat` if you're launching the server in the same machine where you're playing Black Ops 3. *(Docker: set `GAME_PORT` in `docker-compose.yml`.)*
 4. To save space, you can delete any unused fast files in `UnrankedServer/zone`
 5. **(For Custom Clients)** To customise your server maps rotation and gamemodes just edit the files in `UnrankedServer/zone`, `server_zm.cfg` changes zombies configuration, `server.cfg` changes multiplayer configurations, `server_cp.cfg` changes coop campaign configuration.
-These files can be executed even with the vanilla `Launch_Server.bat` or `Launch_Server.sh` but you need to edit these first to execute the desired .cfg file.
-6. If you're trying to host on a Linux ARM64 machine, you should check out [Hangover](https://github.com/AndreRH/hangover), pair it with wine and you're done!
+These files can be executed even with the vanilla `Launch_Server.bat` or `Launch_Server.sh` but you need to edit these first to execute the desired .cfg file. *(Docker: choose the file with `SERVER_CONFIG` in `docker-compose.yml`.)*
+6. If you're trying to host on a Linux ARM64 machine, you should check out [Hangover](https://github.com/AndreRH/hangover), pair it with wine and you're done! *(Doesn't apply to Docker: the image is amd64 only.)*
