@@ -91,7 +91,7 @@ case "${1:-t7x}" in
         ;;
     vanilla)
         prepare_wine
-        # Valve's server opens a window, so give it a virtual display (xvfb-run hangs as PID 1)
+        # Treyarch's server opens a window, so give it a virtual display (xvfb-run hangs as PID 1)
         Xvfb :99 -nolisten tcp &
         export DISPLAY=:99
         until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.2; done

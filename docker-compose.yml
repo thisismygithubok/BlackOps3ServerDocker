@@ -7,7 +7,7 @@ services:
     stdin_open: true          # `docker attach bo3` for the server console (detach: Ctrl-P Ctrl-Q)
     tty: true
     restart: unless-stopped
-    command: boiii            # boiii (EZZBOIII) | t7x | vanilla (Valve's server, MP only). Players must use the same client.
+    command: boiii            # boiii (EZZBOIII) | t7x | vanilla (Treyarch's server, MP only). Players must use the same client.
     environment:
       GAME_PORT: 27017
       SERVER_CONFIG: server_zm.cfg   # server_zm.cfg (zombies) | server.cfg (MP) | server_cp.cfg (coop campaign)

@@ -3,7 +3,7 @@
 ## What this fork adds
 This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller). It keeps the original Windows and Linux scripts and adds a Docker setup, aimed at hosting **Zombies** servers:
 
-- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, steamcmd, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Valve's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
+- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, steamcmd, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Treyarch's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
 - **Server settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`, without editing `.cfg` files.
 - **Zombies map files without the full game**: [DepotDownloader](https://github.com/SteamRE/DepotDownloader) fetches only the Zombies files you need from your own Steam license. Includes a table of every map's codename and the DLC it needs.
 - **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs for all three clients.
@@ -193,7 +193,7 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 | Switch client | Change `command:` to `boiii` or `t7x`, then `docker compose up -d` |
 | Load a mod | Copy the mod to `server/UnrankedServer/mods/<id>/`, set `MOD_ID: "<id>"`, then `docker compose up -d` (see [Mods?](#mods)) |
 
-`command: vanilla` runs Valve's official server under a virtual display. It is multiplayer-only and can't host Zombies.
+`command: vanilla` runs Treyarch's official server under a virtual display. It is multiplayer-only and can't host Zombies.
 
 ### ARM64 hosts (work in progress)
 The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and [Box64](https://github.com/ptitSeb/box64) runs Valve's 64-bit steamcmd.
