@@ -49,10 +49,10 @@ Official BO3 servers only aimed for Windows support, but [Wine](https://www.wine
 5. Done!
 
 ## How to run with Docker (Linux amd64)
-A ready-made image, [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker), runs the server under Wine on any x86-64 Linux host. It includes Wine, steamcmd, this repo's configs and the EZZBOIII files. Game files are **not** in the image: you download them with your own Steam account. This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
+A ready-made image, [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker), runs the server under Wine on any x86-64 Linux host (ARM64 support is [a work in progress](#arm64-hosts-work-in-progress)). It includes Wine, steamcmd, this repo's configs and the EZZBOIII files. Game files are **not** in the image: you download them with your own Steam account. This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
 
 ### What you need
-- An x86-64 Linux host with Docker and Docker Compose
+- An x86-64 Linux host with Docker and Docker Compose (or an ARM64 host, see [ARM64 hosts](#arm64-hosts-work-in-progress))
 - A Steam account that owns Black Ops 3, plus the DLC for any DLC maps you want to host. Anonymous Steam login is refused for the server files.
 - UDP and TCP port `27017` forwarded to the host on your router, if people join over the internet
 
@@ -158,6 +158,16 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 
 `command: vanilla` runs Valve's official server under a virtual display. It is multiplayer-only and can't host Zombies.
 
+### ARM64 hosts (work in progress)
+The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and [Box64](https://github.com/ptitSeb/box64) runs Valve's 64-bit steamcmd.
+
+- **Tested:** on an Apple Silicon Mac with Docker Desktop, both `boiii` and `t7x` load Revelations (`zm_genesis`) and listen on the game port. At idle the server uses about a third of a CPU core and 2 GB of RAM.
+- **On Apple Silicon**, add `ARM64_DEVICE: "m1"` to `environment`. It picks the Box64 build steamcmd uses; the default is `generic`.
+- **On Docker Desktop (Mac)**, `network_mode: host` only works if host networking is enabled in Docker Desktop's settings. Otherwise use the `ports:` mapping.
+- **Not supported:** `command: vanilla`. The arm64 variant has no virtual display.
+- **Not tested yet:** players joining and playing, a full `install` with a Steam login (only an anonymous Steam connection was tested), and ARM Linux servers such as Ampere or Graviton.
+- **Don't force the amd64 image** (`platform: linux/amd64`) on a Mac. Docker Desktop's Rosetta emulation can't run it.
+
 ## Joining a server (players)
 Everyone plays through the same custom client as the server: **EZZBOIII** if the server uses `command: boiii`, **T7X** if it uses `command: t7x`. Ask the host which one.
 
@@ -260,4 +270,4 @@ That's it
 4. To save space, you can delete any unused fast files in `UnrankedServer/zone`
 5. **(For Custom Clients)** To customise your server maps rotation and gamemodes just edit the files in `UnrankedServer/zone`, `server_zm.cfg` changes zombies configuration, `server.cfg` changes multiplayer configurations, `server_cp.cfg` changes coop campaign configuration.
 These files can be executed even with the vanilla `Launch_Server.bat` or `Launch_Server.sh` but you need to edit these first to execute the desired .cfg file. *(Docker: choose the file with `SERVER_CONFIG` in `docker-compose.yml`.)*
-6. If you're trying to host on a Linux ARM64 machine, you should check out [Hangover](https://github.com/AndreRH/hangover), pair it with wine and you're done! *(Doesn't apply to Docker: the image is amd64 only.)*
+6. If you're trying to host on a Linux ARM64 machine, you should check out [Hangover](https://github.com/AndreRH/hangover), pair it with wine and you're done! *(Docker: the image's arm64 variant already does this, see [ARM64 hosts](#arm64-hosts-work-in-progress).)*

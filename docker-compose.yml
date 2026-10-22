@@ -13,6 +13,7 @@ services:
       SERVER_CONFIG: server_zm.cfg   # server_zm.cfg (zombies) | server.cfg (MP) | server_cp.cfg (coop campaign)
       MOD_ID: ""
       STEAM_USER: ""          # required for install: a Steam account that owns BO3 (anonymous is refused)
+      # ARM64_DEVICE: "m1"    # Apple Silicon hosts only (ARM64 support is a work in progress)
     volumes:
       - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
       - ./home:/home/bo3      # Wine prefix + cached Steam login
