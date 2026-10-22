@@ -26,8 +26,8 @@ RUN --mount=type=bind,from=hangover,source=/ho,target=/ho \
  && apt-get install -y --no-install-recommends ca-certificates curl unzip /ho/*.deb \
  && rm -rf /var/lib/apt/lists/* /usr/lib/wine/aarch64-windows /usr/lib/wine/i386-windows
 COPY --from=hangover /x/usr/lib/wine/aarch64-windows /usr/lib/wine/aarch64-windows
-# Only the generic and Apple Silicon Box64 builds; ARM64_DEVICE picks one (default: generic)
-COPY --from=box64 /usr/local/bin/box64 /usr/local/bin/box64-generic /usr/local/bin/box64-m1 /usr/local/bin/
+# Box64 launcher + generic build only (the device-tuned builds made no difference for steamcmd)
+COPY --from=box64 /usr/local/bin/box64 /usr/local/bin/box64-generic /usr/local/bin/
 COPY --from=box64 /usr/lib/box64-x86_64-linux-gnu /usr/lib/box64-x86_64-linux-gnu
 # steamcmd.sh runs $DEBUGGER $STEAMEXE: the 64-bit steamcmd under Box64 (Box32 can't run the 32-bit one)
 ENV DEBUGGER=box64 STEAM_PLATFORM=linux64 BOX64_LOG=0

@@ -162,7 +162,6 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and [Box64](https://github.com/ptitSeb/box64) runs Valve's 64-bit steamcmd.
 
 - **Tested:** on an Apple Silicon Mac with Docker Desktop, both `boiii` and `t7x` load Revelations (`zm_genesis`) and listen on the game port. At idle the server uses about a third of a CPU core and 2 GB of RAM.
-- **On Apple Silicon**, add `ARM64_DEVICE: "m1"` to `environment`. It picks the Box64 build steamcmd uses; the default is `generic`.
 - **On Docker Desktop (Mac)**, `network_mode: host` only works if host networking is enabled in Docker Desktop's settings. Otherwise use the `ports:` mapping.
 - **Not supported:** `command: vanilla`. The arm64 variant has no virtual display.
 - **Not tested yet:** players joining and playing, a full `install` with a Steam login (only an anonymous Steam connection was tested), and ARM Linux servers such as Ampere or Graviton.
