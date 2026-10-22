@@ -22,6 +22,13 @@ install() {
     curl -fL https://github.com/Ezz-lol/boiii-free/releases/latest/download/boiii.exe -o "$SERVER_DIR/boiii.exe"
 }
 
+# setting <dvar> <ENV_VAR>: emit `set <dvar> "<value>"` if ENV_VAR is set (empty counts, e.g. to clear a password)
+setting() {
+    if [ -n "${!2+x}" ]; then
+        echo "set $1 \"${!2//\"/}\""   # cfg strings can't contain quotes
+    fi
+}
+
 prepare_wine() {
     [ -d "$SERVER_DIR" ] || { echo "No server files in /server. Run first: docker compose run --rm bo3 install" >&2; exit 1; }
     [ -d "$WINEPREFIX" ] || { wineboot --init && wineserver -w; }
@@ -31,10 +38,17 @@ prepare_wine() {
     cd "$SERVER_DIR"
     # The game writes its console to files, not stdout: mirror them into `docker logs`
     tail -n0 -F identities/dedicatedpc/console_mp.log boiii/games_{mp,zm,cp}.log 2>/dev/null &
-    # SET_<setting>=<value> env vars override SERVER_CONFIG. They go in a generated cfg that runs it first:
+    # Settings from env vars override SERVER_CONFIG. They go in a generated cfg that runs it first:
     # `+set` on the command line is applied before any cfg runs, so the cfg would win.
     {
         echo "exec \"$SERVER_CONFIG\""
+        setting live_steam_server_name SERVER_NAME
+        setting g_password SERVER_PASSWORD
+        setting com_maxclients MAX_PLAYERS
+        if [ -n "${MAPS:-}" ]; then
+            echo "set sv_maprotation \"gametype ${GAME_MODE:?Set GAME_MODE (e.g. zclassic) together with MAPS}$(printf ' map %s' $MAPS)\""
+        fi
+        # SET_<setting>=<value>: any other setting
         for var in $(compgen -e | grep '^SET_'); do
             echo "set ${var#SET_} \"${!var//\"/}\""   # cfg strings can't contain quotes
         done
