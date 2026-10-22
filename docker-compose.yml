@@ -17,9 +17,11 @@ services:
       SERVER_NAME: "My Zombies Server"
       GAME_MODE: zclassic       # zclassic (zombies) | tdm, dom, ... (MP)
       MAPS: "zm_genesis"        # map codenames, played in order
+      # Optional, defaults come from SERVER_CONFIG. All env vars are listed in the README (step 4).
       # SERVER_PASSWORD: "secret"
+      # RCON_PASSWORD: ""
       # MAX_PLAYERS: "4"
-      # SET_<setting>: "value"  # any other setting from SERVER_CONFIG, e.g. SET_sv_skip_lobby: "0"
+      # SET_<setting>: "value"  # any setting without its own env var
     volumes:
       - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
       - ./home:/home/bo3      # Wine prefix + cached Steam login

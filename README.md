@@ -124,16 +124,32 @@ The first line of `filelist.txt` is always needed. The second line selects a map
 | Nacht der Untoten, Verrückt, Shi No Numa, Kino der Toten, Ascension, Shangri-La, Moon, Origins | `zm_prototype`, `zm_asylum`, `zm_sumpf`, `zm_theater`, `zm_cosmodrome`, `zm_temple`, `zm_moon`, `zm_tomb` | Zombies Chronicles |
 
 ### 4. Pick the map and settings
-Set them in `docker-compose.yml`. They override the same settings in `server_zm.cfg`:
+Set them in `docker-compose.yml`. Each one you set overrides the same setting in `server_zm.cfg`. Any you leave out keep the default from that file, listed below (Zombies / multiplayer where they differ). On/off settings use `"1"` and `"0"`.
 
-| Env var | What it sets | Example |
+| Env var | What it does | Default |
 |---|---|---|
-| `SERVER_NAME` | Name in the server browser | `"My Zombies Server"` |
-| `SERVER_PASSWORD` | Password to join (empty = none) | `"secret"` |
-| `MAX_PLAYERS` | Maximum players | `"4"` |
-| `GAME_MODE` | Game mode, set together with `MAPS` | `zclassic` (Zombies) |
-| `MAPS` | Map codenames, played in order | `"zm_genesis zm_zod"` |
-| `SET_<setting>` | Any other server setting | `SET_sv_skip_lobby: "0"` |
+| `SERVER_NAME` | Name in the server browser | `Default BOIII Zombies Server` |
+| `SERVER_DESCRIPTION` | Description in the server browser | `My longest YEA BOIII ZOMBIES ever` |
+| `SERVER_PASSWORD` | Password to join (empty = none) | empty |
+| `RCON_PASSWORD` | Remote console password (empty = disabled) | empty |
+| `MAX_PLAYERS` | Maximum players | `4` / `18` |
+| `MIN_PLAYERS` | Players needed to start the match (Zombies, campaign) | `1` |
+| `PRIVATE_SLOTS` | Slots reserved for private clients | `0` |
+| `GAME_MODE` | Game mode, set together with `MAPS` | `zclassic` / `tdm` |
+| `MAPS` | Map codenames, played in order, e.g. `"zm_genesis zm_zod"` | `zm_tomb` / all MP maps |
+| `SKIP_LOBBY` | `1` = load the map immediately, `0` = wait in the lobby | `1` |
+| `LAN_ONLY` | `1` = hide the server from the public server list | `0` |
+| `CONNECTION_TIMEOUT` | Seconds before a stalled connection is dropped | `30` |
+| `RECONNECT_LIMIT` | Reconnect attempts allowed | `3` |
+| `VERIFY_CLIENT_FILES` | `1` = require clients' game files to match the server's | `0` |
+| `CHAT_FLOOD_PROTECTION` | `1` = limit chat spam | `1` |
+| `THIRD_PERSON` | `1` = third-person view | `0` |
+| `DEAD_CHAT` | `1` = everyone sees dead players' chat | `0` |
+| `FIRST_GOBBLEGUM_FREE` | Zombies: `1` = first GobbleGum is free, `0` = 500 points | `1` |
+| `TEAM_BALANCE` | Multiplayer: `1` = auto-balance teams | `1` |
+| `BOTS_ALLIES`, `BOTS_AXIS`, `BOTS_FFA` | Multiplayer: number of bots per team / in free-for-all | `0` |
+| `BOT_DIFFICULTY` | Multiplayer: `0` easy, `1` normal, `2` hard, `3` veteran | `1` |
+| `SET_<setting>` | Any other server setting, by its in-game name: `SET_<setting>: "value"` | |
 
 The maps must be ones whose files you added in step 3. Apply changes with `docker compose up -d`. Values can't contain double quotes.
 
@@ -156,7 +172,7 @@ The first start takes a little longer while the Wine prefix is created. The serv
 3. The map's codename is the `FolderName` in `workshop_<number>/workshop.json`. Copy the downloaded files to `server/UnrankedServer/usermaps/<codename>/`, so you end up with `usermaps/<codename>/zone/...`.
 4. Set `MAPS: "<codename>"` in `docker-compose.yml` and run `docker compose up -d`.
 
-Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `SET_sv_skip_lobby: "0"`.
+Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `SKIP_LOBBY: "0"`.
 
 ### Day-to-day
 | Task | Command |

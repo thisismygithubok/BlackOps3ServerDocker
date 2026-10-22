@@ -22,6 +22,32 @@ install() {
     curl -fL https://github.com/Ezz-lol/boiii-free/releases/latest/download/boiii.exe -o "$SERVER_DIR/boiii.exe"
 }
 
+# ENV_VAR=setting: each env var that is set overrides that setting in SERVER_CONFIG.
+# g_log and sv_lobby_mode are left out on purpose: log mirroring reads g_log, and the lobby mode must match SERVER_CONFIG.
+SETTINGS=(
+    SERVER_NAME=live_steam_server_name
+    SERVER_DESCRIPTION=live_steam_server_description
+    SERVER_PASSWORD=g_password
+    RCON_PASSWORD=rcon_password
+    MAX_PLAYERS=com_maxclients
+    MIN_PLAYERS=lobby_min_players
+    PRIVATE_SLOTS=sv_privateClients
+    CONNECTION_TIMEOUT=sv_timeout
+    RECONNECT_LIMIT=sv_reconnectlimit
+    VERIFY_CLIENT_FILES=sv_pure
+    CHAT_FLOOD_PROTECTION=sv_floodProtect
+    SKIP_LOBBY=sv_skip_lobby
+    LAN_ONLY=sv_lanonly
+    THIRD_PERSON=cg_thirdPerson
+    DEAD_CHAT=g_deadChat
+    FIRST_GOBBLEGUM_FREE=scr_firstGumFree
+    TEAM_BALANCE=scr_teambalance
+    BOTS_ALLIES=bot_maxallies
+    BOTS_AXIS=bot_maxAxis
+    BOTS_FFA=bot_maxFree
+    BOT_DIFFICULTY=bot_difficulty
+)
+
 # setting <dvar> <ENV_VAR>: emit `set <dvar> "<value>"` if ENV_VAR is set (empty counts, e.g. to clear a password)
 setting() {
     if [ -n "${!2+x}" ]; then
@@ -42,9 +68,9 @@ prepare_wine() {
     # `+set` on the command line is applied before any cfg runs, so the cfg would win.
     {
         echo "exec \"$SERVER_CONFIG\""
-        setting live_steam_server_name SERVER_NAME
-        setting g_password SERVER_PASSWORD
-        setting com_maxclients MAX_PLAYERS
+        for pair in "${SETTINGS[@]}"; do
+            setting "${pair#*=}" "${pair%%=*}"
+        done
         if [ -n "${MAPS:-}" ]; then
             echo "set sv_maprotation \"gametype ${GAME_MODE:?Set GAME_MODE (e.g. zclassic) together with MAPS}$(printf ' map %s' $MAPS)\""
         fi
