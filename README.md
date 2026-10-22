@@ -118,7 +118,15 @@ EOF
 ./DepotDownloader -app 311210 -os windows -username your_steam_username -remember-password -filelist filelist.txt -dir out
 cp out/zone/* /path/to/bo3/server/UnrankedServer/zone/
 ```
-The first line of `filelist.txt` is always needed. The second line selects a map. To add more maps, add one line per map and run the command again. Files you already have are skipped.
+`-filelist filelist.txt` tells DepotDownloader which files to download. Without it, it downloads the whole game. Each line of `filelist.txt` matches files by their path inside the game folder. A line is either an exact path (`zone/zm_genesis.ff`) or, with the `regex:` prefix, a regular expression.
+
+- The **first line** is always needed. It matches the shared Zombies files: `zm_patch`, `zm_common` and `zm_levelcommon` (`.ff` and `.fd`), plus their English `en_` versions.
+- **Each further line** selects one map. It matches that map's files, its `_patch` file and their `en_` versions. For another map, copy the line and replace `zm_genesis` with the map's codename from the table below:
+  ```
+  regex:^zone/(en_)?<codename>(_patch)?\.f[fd]$
+  ```
+
+To add maps later, add their lines and run the same command again. Files you already have are skipped. Then copy `out/zone/*` to the server again. On an ARM64 host, download `DepotDownloader-linux-arm64.zip` instead.
 
 | Map | Codename | Comes with |
 |---|---|---|
