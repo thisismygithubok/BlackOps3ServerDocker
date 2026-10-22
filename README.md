@@ -1,5 +1,15 @@
 # BlackOps3ServerInstaller
 
+## What this fork adds
+This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller). It keeps the original Windows and Linux scripts and adds a Docker setup, aimed at hosting **Zombies** servers:
+
+- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, steamcmd, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Valve's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
+- **Server settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`, without editing `.cfg` files.
+- **Zombies map files without the full game**: [DepotDownloader](https://github.com/SteamRE/DepotDownloader) fetches only the Zombies files you need from your own Steam license. Includes a table of every map's codename and the DLC it needs.
+- **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs for all three clients.
+- **Player guide**: how to install EZZBOIII or T7X and connect, including on a Mac. See [Joining a server](#joining-a-server-players).
+- **ARM64 support (work in progress)**: the image is multi-arch. On ARM64 hosts it uses [Hangover](https://github.com/AndreRH/hangover) and Box64, and it is tested on Apple Silicon. See [ARM64 hosts](#arm64-hosts-work-in-progress).
+
 <img width="3840" height="1240" alt="6534a8436e907efb0ced99edd8d02435" src="https://github.com/user-attachments/assets/f40d08e8-6285-423f-baf2-ddb873ed4301" />
 
 
