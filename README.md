@@ -3,12 +3,12 @@
 ## What this fork adds
 This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller). It keeps the original Windows and Linux scripts and adds a Docker setup, aimed at hosting **Zombies** servers:
 
-- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, steamcmd, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Treyarch's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
+- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, DepotDownloader, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Treyarch's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
 - **Server settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`, without editing `.cfg` files.
-- **Zombies map files without the full game**: [DepotDownloader](https://github.com/SteamRE/DepotDownloader) fetches only the Zombies files you need from your own Steam license. Includes a table of every map's codename and the DLC it needs.
+- **Maps and mods downloaded for you**: list the maps in `MAPS` and Workshop items in `WORKSHOP_MAPS` / `MOD_ID`, and `install` / `update` fetch exactly those files with [DepotDownloader](https://github.com/SteamRE/DepotDownloader) from your own Steam license, without downloading the full game.
 - **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs for all three clients.
 - **Player guide**: how to install EZZBOIII or T7X and connect, including on a Mac. See [Joining a server](#joining-a-server-players).
-- **ARM64 support (work in progress)**: the image is multi-arch. On ARM64 hosts it uses [Hangover](https://github.com/AndreRH/hangover) and Box64, and it is tested on Apple Silicon. See [ARM64 hosts](#arm64-hosts-work-in-progress).
+- **ARM64 support (work in progress)**: the image is multi-arch. On ARM64 hosts it uses [Hangover](https://github.com/AndreRH/hangover), and it is tested on Apple Silicon. See [ARM64 hosts](#arm64-hosts-work-in-progress).
 
 Simplifying Black Ops 3 server installation for both Steam Black Ops 3 and Custom Clients (like T7X or BOIII). \
 **No copyrighted files are distributed using these scripts.** \
@@ -56,7 +56,7 @@ Official BO3 servers only aimed for Windows support, but [Wine](https://www.wine
 5. Done!
 
 ## How to run with Docker (Linux amd64)
-A ready-made image, [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker), runs the server under Wine on any x86-64 Linux host (ARM64 support is [a work in progress](#arm64-hosts-work-in-progress)). It includes Wine, steamcmd, this repo's configs and the EZZBOIII files. Game files are **not** in the image: you download them with your own Steam account. This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
+A ready-made image, [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker), runs the server under Wine on any x86-64 Linux host (ARM64 support is [a work in progress](#arm64-hosts-work-in-progress)). It includes Wine, DepotDownloader, this repo's configs and the EZZBOIII files. Game files are **not** in the image: the container downloads them with your own Steam account. This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
 
 ### What you need
 - An x86-64 Linux host with Docker and Docker Compose (or an ARM64 host, see [ARM64 hosts](#arm64-hosts-work-in-progress))
@@ -85,10 +85,12 @@ services:
       SERVER_CONFIG: server_zm.cfg
       MOD_ID: ""
       STEAM_USER: "your_steam_username"
-      # Server settings (see step 4)
-      SERVER_NAME: "My Zombies Server"
+      # Maps: downloaded by `install` / `update`, see step 2
       GAME_MODE: zclassic
       MAPS: "zm_genesis"
+      # WORKSHOP_MAPS: ""     # Workshop IDs of custom maps
+      # Server settings, see step 3
+      SERVER_NAME: "My Zombies Server"
       # SERVER_PASSWORD: "secret"
       # MAX_PLAYERS: "4"
     volumes:
@@ -97,36 +99,17 @@ services:
 ```
 If you can't use host networking, remove `network_mode` and add `ports: ["27017:27017/udp", "27017:27017/tcp"]`.
 
-### 2. Download the server files
+### 2. Download the server and map files
 ```bash
 docker compose run --rm bo3 install
 ```
-This asks for your Steam password and Steam Guard code once, then downloads the dedicated server files and both clients (`boiii.exe`, `t7x.exe`). The login is cached, so later updates don't prompt.
+This asks for your Steam password and Steam Guard code once, then downloads:
+- the dedicated server files. A Zombies or campaign server skips the multiplayer maps (2.8 GB of the 4.4 GB). Those are downloaded only for `server.cfg` or when `MAPS` contains an `mp_` map.
+- the Zombies files for each stock map in `MAPS`, from your Black Ops 3 license (only those files, not the whole game)
+- the custom maps in `WORKSHOP_MAPS` and the mod in `MOD_ID` (see [Hosting custom maps](#hosting-custom-maps))
+- both clients (`boiii.exe`, `t7x.exe`)
 
-### 3. Add the Zombies map files
-The dedicated server download only contains multiplayer files. Zombies needs the shared Zombies fast files plus the files of each map you host. [DepotDownloader](https://github.com/SteamRE/DepotDownloader) fetches only those files from your Black Ops 3 license, so you don't have to download the whole game:
-```bash
-mkdir ~/bo3zm && cd ~/bo3zm
-curl -fLO https://github.com/SteamRE/DepotDownloader/releases/latest/download/DepotDownloader-linux-x64.zip
-unzip DepotDownloader-linux-x64.zip && chmod +x DepotDownloader
-
-cat > filelist.txt <<'EOF'
-regex:^zone/(en_)?zm_(patch|common|levelcommon)\.f[fd]$
-regex:^zone/(en_)?zm_genesis(_patch)?\.f[fd]$
-EOF
-
-./DepotDownloader -app 311210 -os windows -username your_steam_username -remember-password -filelist filelist.txt -dir out
-cp out/zone/* /path/to/bo3/server/UnrankedServer/zone/
-```
-`-filelist filelist.txt` tells DepotDownloader which files to download. Without it, it downloads the whole game. Each line of `filelist.txt` matches files by their path inside the game folder. A line is either an exact path (`zone/zm_genesis.ff`) or, with the `regex:` prefix, a regular expression.
-
-- The **first line** is always needed. It matches the shared Zombies files: `zm_patch`, `zm_common` and `zm_levelcommon` (`.ff` and `.fd`), plus their English `en_` versions.
-- **Each further line** selects one map. It matches that map's files, its `_patch` file and their `en_` versions. For another map, copy the line and replace `zm_genesis` with the map's codename from the table below:
-  ```
-  regex:^zone/(en_)?<codename>(_patch)?\.f[fd]$
-  ```
-
-To add maps later, add their lines and run the same command again. Files you already have are skipped. Then copy `out/zone/*` to the server again. On an ARM64 host, download `DepotDownloader-linux-arm64.zip` instead.
+The login is cached in `home/`, so later runs don't prompt. After changing `MAPS` or `WORKSHOP_MAPS`, run `docker compose run --rm bo3 update` to download the new files. Files you already have are skipped. If you don't own a map's DLC, its files aren't downloaded, and the server won't start until you remove that map from `MAPS`.
 
 | Map | Codename | Comes with |
 |---|---|---|
@@ -138,7 +121,7 @@ To add maps later, add their lines and run the same command again. Files you alr
 | Revelations | `zm_genesis` | DLC 4 Salvation |
 | Nacht der Untoten, Verrückt, Shi No Numa, Kino der Toten, Ascension, Shangri-La, Moon, Origins | `zm_prototype`, `zm_asylum`, `zm_sumpf`, `zm_theater`, `zm_cosmodrome`, `zm_temple`, `zm_moon`, `zm_tomb` | Zombies Chronicles |
 
-### 4. Pick the map and settings
+### 3. Server settings
 Set them in `docker-compose.yml`. Each one you set overrides the same setting in `server_zm.cfg`. Any you leave out keep the default from that file, listed below (Zombies / multiplayer where they differ). On/off settings use `"1"` and `"0"`.
 
 | Env var | What it does | Default |
@@ -166,11 +149,11 @@ Set them in `docker-compose.yml`. Each one you set overrides the same setting in
 | `BOT_DIFFICULTY` | Multiplayer: `0` easy, `1` normal, `2` hard, `3` veteran | `1` |
 | `SET_<setting>` | Any other server setting, by its in-game name: `SET_<setting>: "value"` | |
 
-The maps must be ones whose files you added in step 3. Apply changes with `docker compose up -d`. Values can't contain double quotes.
+Apply changes with `docker compose up -d` (after `update`, if you changed `MAPS`). Values can't contain double quotes.
 
 Settings you don't set this way come from `server/UnrankedServer/zone/server_zm.cfg`, which you can still edit (apply with `docker compose restart`). At startup the container writes `zone/docker_settings.cfg`, which runs `server_zm.cfg` and then applies these values. Don't edit it, because it's regenerated every start.
 
-### 5. Start the server
+### 4. Start the server
 ```bash
 docker compose up -d
 docker logs -f bo3
@@ -179,13 +162,8 @@ The first start takes a little longer while the Wine prefix is created. The serv
 
 ### Hosting custom maps
 1. Find the map on the [Steam Workshop](https://steamcommunity.com/app/311210/workshop/) and copy the number at the end of its URL (`?id=<number>`).
-2. Download it with DepotDownloader:
-   ```bash
-   cd ~/bo3zm
-   ./DepotDownloader -app 311210 -pubfile <number> -username your_steam_username -remember-password -dir workshop_<number>
-   ```
-3. The map's codename is the `FolderName` in `workshop_<number>/workshop.json`. Copy the downloaded files to `server/UnrankedServer/usermaps/<codename>/`, so you end up with `usermaps/<codename>/zone/...`.
-4. Set `MAPS: "<codename>"` in `docker-compose.yml` and run `docker compose up -d`.
+2. Add it to `WORKSHOP_MAPS` in `docker-compose.yml` (separate several IDs with spaces), then run `docker compose run --rm bo3 update`. The map is installed as `usermaps/<codename>/`, and `update` prints the codename.
+3. Put the codename in `MAPS` and run `docker compose up -d`.
 
 Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `SKIP_LOBBY: "0"`.
 
@@ -196,20 +174,21 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 | Server console | `docker attach bo3` (detach: Ctrl-P Ctrl-Q) |
 | Apply `docker-compose.yml` changes (settings, `command`, ...) | `docker compose up -d` |
 | Apply `server_zm.cfg` changes | `docker compose restart` |
-| Update server files and clients | `docker compose run --rm bo3 update && docker compose restart` |
+| Change maps | Edit `MAPS` / `WORKSHOP_MAPS`, then `docker compose run --rm bo3 update && docker compose up -d` |
+| Update server files, maps and clients | `docker compose run --rm bo3 update && docker compose restart` |
 | Update the image | `docker compose pull && docker compose up -d` |
 | Switch client | Change `command:` to `boiii` or `t7x`, then `docker compose up -d` |
-| Load a mod | Copy the mod to `server/UnrankedServer/mods/<id>/`, set `MOD_ID: "<id>"`, then `docker compose up -d` (see [Mods?](#mods)) |
+| Load a Workshop mod | Set `MOD_ID: "<Workshop ID>"`, then `docker compose run --rm bo3 update && docker compose up -d` |
 
 `command: vanilla` runs Treyarch's official server under a virtual display. It is multiplayer-only and can't host Zombies.
 
 ### ARM64 hosts (work in progress)
-The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and [Box64](https://github.com/ptitSeb/box64) runs Valve's 64-bit steamcmd.
+The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and DepotDownloader has a native arm64 build.
 
 - **Tested:** on an Apple Silicon Mac with Docker Desktop, both `boiii` and `t7x` load Revelations (`zm_genesis`) and listen on the game port. At idle the server uses about a third of a CPU core and 2 GB of RAM.
 - **On Docker Desktop (Mac)**, `network_mode: host` only works if host networking is enabled in Docker Desktop's settings. Otherwise use the `ports:` mapping.
 - **Not supported:** `command: vanilla`. The arm64 variant has no virtual display.
-- **Not tested yet:** players joining and playing, a full `install` with a Steam login (only an anonymous Steam connection was tested), and ARM Linux servers such as Ampere or Graviton.
+- **Not tested yet:** players joining and playing, a full `install` with a Steam login inside the arm64 image, and ARM Linux servers such as Ampere or Graviton.
 - **Don't force the amd64 image** (`platform: linux/amd64`) on a Mac. Docker Desktop's Rosetta emulation can't run it.
 
 ## Joining a server (players)
@@ -259,7 +238,7 @@ EZZBOIII requires some additional files in your `%APPDATA%/Local` folder to crea
 - Linux: open your wine prefix and copy the `boiii` folder in `AppData/Local` folder present in it
 
 ## Cool, but Zombies?
-*Docker: you need the same files, but DepotDownloader fetches them for you. See [3. Add the Zombies map files](#3-add-the-zombies-map-files).*
+*Docker: you need the same files, but the container downloads them for the maps in `MAPS`. See [2. Download the server and map files](#2-download-the-server-and-map-files).*
 
 The default server files only downloads MP-ready stuff. To serve a Zombies server you need to copy these fast files
 from your BO3 game files and put them into `zone`:
@@ -283,7 +262,7 @@ zone/zm_zod_patch.ff
 ```
 
 ## Mods?
-*Docker: put the mod in `server/UnrankedServer/mods/<id>/` the same way, but set `MOD_ID: "<id>"` in `docker-compose.yml` instead of editing `CustomClient_Server.bat`.*
+*Docker: set `MOD_ID: "<Workshop ID>"` in `docker-compose.yml` and run `update`. The container downloads the mod into `mods/<id>/`, so you don't need to copy it or edit `CustomClient_Server.bat`.*
 
 There's a difference between Custom Maps and Mods, this section will explain how to load a mod downloaded from the Steam Workshop.
 Let's say you subscribed to the [The Kermit Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=1638465081), this will create a folder in your Steam folder in `steamapps/workshop/content/311210/1638465081`, create a new `mods` folder inside the root of your server folder (in UnrankedServer) and copy the folder named `1638465081` (this number changes depending on the mod) inside it. The resulting folders structure should look like this:
@@ -293,7 +272,7 @@ Let's say you subscribed to the [The Kermit Mod](https://steamcommunity.com/shar
 Now modify the `set ModFolderName=` in `CustomClient_Server.bat` into `set ModFolderName=1638465081`, that's it, you're done!
 
 ## Custom Maps?
-*Docker: see [Hosting custom maps](#hosting-custom-maps). The folder layout is the same, inside `server/UnrankedServer/`.*
+*Docker: see [Hosting custom maps](#hosting-custom-maps). The container downloads Workshop maps into the same folder layout.*
 
 This section will explain how to load custom maps downloaded from the Steam Workshop.
 Let's say you downloaded the [Mob of the Dead](https://steamcommunity.com/sharedfiles/filedetails/?id=3373649394) custom map and want to host a server with it, create the `usermaps` folder inside the root of your server folder (in UnrankedServer) and create a folder within it called `zm_prison` (the map codename, easily guess the name from the map gamefiles), put all map files inside this folder.

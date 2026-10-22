@@ -2,22 +2,76 @@
 set -euo pipefail
 
 SERVER_DIR=/server/UnrankedServer
-STEAMCMD_DIR=/home/bo3/steamcmd
+
+# DepotDownloader with the cached login: the first run asks for the password and Steam Guard code
+# (anonymous is refused: the account must own BO3), later runs reuse the token saved in /home/bo3
+steam_download() {
+    DepotDownloader -username "${STEAM_USER:?Set STEAM_USER to a Steam account that owns Black Ops 3}" -remember-password -os windows "$@"
+}
+
+# DepotDownloader filelist for the Zombies maps in MAPS: the shared Zombies files plus each zm_ map's files.
+# Custom map codenames just match nothing here; they come from WORKSHOP_MAPS.
+zombies_filelist() {
+    local map lines=""
+    for map in ${MAPS:-}; do
+        if [[ $map == zm_* ]]; then
+            lines+="regex:^zone/(en_)?${map}(_patch)?\.f[fd]\$"$'\n'
+        fi
+    done
+    if [ -n "$lines" ]; then
+        printf 'regex:^zone/(en_)?zm_(patch|common|levelcommon)\\.f[fd]$\n%s' "$lines"
+    fi
+}
+
+# DepotDownloader filelist for the server download: Zombies and campaign servers skip the
+# multiplayer maps (2.8GB of the 4.4GB). Empty (= everything) for multiplayer.
+server_filelist() {
+    if [ "$SERVER_CONFIG" != server.cfg ] && [[ " ${MAPS:-} " != *" mp_"* ]]; then
+        echo 'regex:^(?!UnrankedServer/zone/(en_)?mp_)'
+    fi
+}
+
+# workshop <id> <usermaps|mods>: download a Workshop item into usermaps/<FolderName> or mods/<id>
+workshop() {
+    local tmp="$SERVER_DIR/.workshop/$1" name="$1"
+    rm -rf "$tmp"
+    steam_download -app 311210 -pubfile "$1" -dir "$tmp"
+    rm -rf "$tmp/.DepotDownloader"
+    if [ "$2" = usermaps ]; then
+        name=$(sed -n 's/.*"FolderName"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$tmp/workshop.json" 2>/dev/null || true)
+        [ -n "$name" ] || { echo "Workshop item $1 has no FolderName in workshop.json: is it a map?" >&2; exit 1; }
+    fi
+    mkdir -p "$SERVER_DIR/$2"
+    rm -rf "${SERVER_DIR:?}/$2/$name"
+    mv "$tmp" "$SERVER_DIR/$2/$name"
+    echo "Workshop item $1 installed as $2/$name"
+}
 
 install() {
-    if [ ! -x "$STEAMCMD_DIR/steamcmd.sh" ]; then
-        # bind mounts / pre-existing volumes don't get the image's copy of this dir
-        mkdir -p "$STEAMCMD_DIR"
-        curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C "$STEAMCMD_DIR"
+    local filelist server_files=()
+    filelist=$(server_filelist)
+    if [ -n "$filelist" ]; then
+        echo "$filelist" > /tmp/server-filelist.txt
+        server_files=(-filelist /tmp/server-filelist.txt)
     fi
-    # Anonymous login is refused for 545990 ("Missing configuration"): the account must own BO3.
-    # steamcmd prompts for password / Steam Guard, then caches the login in $STEAMCMD_DIR
-    "$STEAMCMD_DIR/steamcmd.sh" +@sSteamCmdForcePlatformType windows +force_install_dir /server \
-        +login "${STEAM_USER:?Set STEAM_USER to a Steam account that owns Black Ops 3}" +app_update 545990 validate +quit || true
-    [ -d "$SERVER_DIR" ] || { echo "steamcmd did not install app 545990. Check the login above and that /server is writable by uid 1000." >&2; exit 1; }
+    steam_download -app 545990 -dir /server "${server_files[@]}"
+    [ -d "$SERVER_DIR" ] || { echo "The server files were not downloaded. Check the login above and that /server is writable by uid 1000." >&2; exit 1; }
 
     # Repo configs never overwrite files the user has already edited
     cp -r --update=none /opt/bo3/UnrankedServer/. "$SERVER_DIR/"
+
+    filelist=$(zombies_filelist)
+    if [ -n "$filelist" ]; then
+        echo "$filelist" > /tmp/filelist.txt
+        steam_download -app 311210 -filelist /tmp/filelist.txt -dir "$SERVER_DIR"
+    fi
+    for id in ${WORKSHOP_MAPS:-}; do
+        workshop "$id" usermaps
+    done
+    if [ -n "${MOD_ID:-}" ]; then
+        workshop "$MOD_ID" mods
+    fi
+
     curl -fL https://master.bo3.eu/t7x/t7x.exe -o "$SERVER_DIR/t7x.exe"
     curl -fL https://github.com/Ezz-lol/boiii-free/releases/latest/download/boiii.exe -o "$SERVER_DIR/boiii.exe"
 }
@@ -62,6 +116,12 @@ prepare_wine() {
     local appdata="$WINEPREFIX/drive_c/users/bo3/AppData/Local"
     [ -d "$appdata/boiii" ] || unzip -q /opt/bo3/boiii-server-files.zip -d "$appdata"
     cd "$SERVER_DIR"
+    for map in ${MAPS:-}; do
+        [ -e "zone/$map.ff" ] || [ -d "usermaps/$map" ] || {
+            echo "Map $map has no files. Run: docker compose run --rm bo3 update (custom maps: add their Workshop ID to WORKSHOP_MAPS)" >&2
+            exit 1
+        }
+    done
     # The game writes its console to files, not stdout: mirror them into `docker logs`
     tail -n0 -F identities/dedicatedpc/console_mp.log boiii/games_{mp,zm,cp}.log 2>/dev/null &
     # Settings from env vars override SERVER_CONFIG. They go in a generated cfg that runs it first:
