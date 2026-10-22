@@ -40,7 +40,7 @@ RUN curl -fsSL -o /tmp/dd.zip https://github.com/SteamRE/DepotDownloader/release
 USER bo3
 # Invariant globalization: DepotDownloader (.NET) then doesn't need libicu
 ENV WINEPREFIX=/home/bo3/.wine WINEDEBUG=-all XDG_RUNTIME_DIR=/tmp DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
-    GAME_PORT=27017 MOD_ID= SERVER_CONFIG=server.cfg STEAM_USER=
+    GAME_PORT=27017 MOD_ID= SERVER_CONFIG=server_zm.cfg STEAM_USER=
 
 COPY boiii-server-files.zip /opt/bo3/
 COPY --chown=bo3:bo3 UnrankedServer /opt/bo3/UnrankedServer
@@ -51,4 +51,4 @@ WORKDIR /server
 VOLUME ["/server", "/home/bo3"]
 EXPOSE 27017/udp 27017/tcp
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["t7x"]
+CMD ["boiii"]

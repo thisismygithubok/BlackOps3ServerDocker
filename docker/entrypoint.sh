@@ -141,7 +141,7 @@ prepare_wine() {
     } > zone/docker_settings.cfg
 }
 
-case "${1:-t7x}" in
+case "$1" in
     install|update)
         install
         ;;
