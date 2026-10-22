@@ -31,6 +31,14 @@ prepare_wine() {
     cd "$SERVER_DIR"
     # The game writes its console to files, not stdout: mirror them into `docker logs`
     tail -n0 -F identities/dedicatedpc/console_mp.log boiii/games_{mp,zm,cp}.log 2>/dev/null &
+    # SET_<setting>=<value> env vars override SERVER_CONFIG. They go in a generated cfg that runs it first:
+    # `+set` on the command line is applied before any cfg runs, so the cfg would win.
+    {
+        echo "exec \"$SERVER_CONFIG\""
+        for var in $(compgen -e | grep '^SET_'); do
+            echo "set ${var#SET_} \"${!var//\"/}\""   # cfg strings can't contain quotes
+        done
+    } > zone/docker_settings.cfg
 }
 
 case "${1:-t7x}" in
@@ -39,7 +47,7 @@ case "${1:-t7x}" in
         ;;
     t7x|boiii)
         prepare_wine
-        exec wine "$1.exe" -headless +set fs_game "$MOD_ID" +set net_port "$GAME_PORT" +set logfile 2 +exec "$SERVER_CONFIG"
+        exec wine "$1.exe" -headless +set fs_game "$MOD_ID" +set net_port "$GAME_PORT" +set logfile 2 +exec docker_settings.cfg
         ;;
     vanilla)
         prepare_wine
@@ -47,7 +55,7 @@ case "${1:-t7x}" in
         Xvfb :99 -nolisten tcp &
         export DISPLAY=:99
         until [ -e /tmp/.X11-unix/X99 ]; do sleep 0.2; done
-        exec wine BlackOps3_UnrankedDedicatedServer.exe +set fs_game usermaps +set net_port "$GAME_PORT" +set logfile 2 +exec "$SERVER_CONFIG"
+        exec wine BlackOps3_UnrankedDedicatedServer.exe +set fs_game usermaps +set net_port "$GAME_PORT" +set logfile 2 +exec docker_settings.cfg
         ;;
     *)
         exec "$@"

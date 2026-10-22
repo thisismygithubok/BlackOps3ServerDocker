@@ -78,6 +78,11 @@ services:
       SERVER_CONFIG: server_zm.cfg
       MOD_ID: ""
       STEAM_USER: "your_steam_username"
+      # Server settings (see step 4): SET_<setting> overrides that setting in SERVER_CONFIG
+      SET_live_steam_server_name: "My Zombies Server"
+      SET_sv_maprotation: "gametype zclassic map zm_genesis"
+      # SET_g_password: "secret"
+      # SET_com_maxclients: "4"
     volumes:
       - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
       - ./home:/home/bo3      # Wine prefix + cached Steam login
@@ -118,13 +123,16 @@ The first line of `filelist.txt` is always needed. The second line selects a map
 | Nacht der Untoten, Verrückt, Shi No Numa, Kino der Toten, Ascension, Shangri-La, Moon, Origins | `zm_prototype`, `zm_asylum`, `zm_sumpf`, `zm_theater`, `zm_cosmodrome`, `zm_temple`, `zm_moon`, `zm_tomb` | Zombies Chronicles |
 
 ### 4. Pick the map and settings
-Edit `server/UnrankedServer/zone/server_zm.cfg`:
+Set them in `docker-compose.yml`. Any setting from `server_zm.cfg` can be given as `SET_<setting>`, and it overrides the value in the file:
+```yaml
+      SET_live_steam_server_name: "My Zombies Server"           # name in the server browser
+      SET_sv_maprotation: "gametype zclassic map zm_genesis"    # the map to load
+      SET_g_password: "secret"                                  # keep the server private
+      SET_com_maxclients: "4"                                   # max players
 ```
-set live_steam_server_name "My Zombies Server"            // name in the server browser
-set g_password ""                                         // set a password to keep the server private
-set sv_maprotation "gametype zclassic map zm_genesis"     // the map to load
-```
-The map must be one whose files you added in step 3. Restart to apply: `docker compose restart`.
+The map must be one whose files you added in step 3. Apply changes with `docker compose up -d`. Values can't contain double quotes.
+
+Settings you don't set this way come from `server/UnrankedServer/zone/server_zm.cfg`, which you can still edit (apply with `docker compose restart`). At startup the container writes `zone/docker_settings.cfg`, which runs `server_zm.cfg` and then applies the `SET_` values. Don't edit it, because it's regenerated every start.
 
 ### 5. Start the server
 ```bash
@@ -141,16 +149,17 @@ The first start takes a little longer while the Wine prefix is created. The serv
    ./DepotDownloader -app 311210 -pubfile <number> -username your_steam_username -remember-password -dir workshop_<number>
    ```
 3. The map's codename is the `FolderName` in `workshop_<number>/workshop.json`. Copy the downloaded files to `server/UnrankedServer/usermaps/<codename>/`, so you end up with `usermaps/<codename>/zone/...`.
-4. Set `sv_maprotation "gametype zclassic map <codename>"` in `server_zm.cfg` and run `docker compose restart`.
+4. Set `SET_sv_maprotation: "gametype zclassic map <codename>"` in `docker-compose.yml` and run `docker compose up -d`.
 
-Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `sv_skip_lobby "0"` in `server_zm.cfg`.
+Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `SET_sv_skip_lobby: "0"`.
 
 ### Day-to-day
 | Task | Command |
 |---|---|
 | Logs | `docker logs -f bo3` |
 | Server console | `docker attach bo3` (detach: Ctrl-P Ctrl-Q) |
-| Restart after config changes | `docker compose restart` |
+| Apply `docker-compose.yml` changes (`SET_` settings, `command`, ...) | `docker compose up -d` |
+| Apply `server_zm.cfg` changes | `docker compose restart` |
 | Update server files and clients | `docker compose run --rm bo3 update && docker compose restart` |
 | Update the image | `docker compose pull && docker compose up -d` |
 | Switch client | Change `command:` to `boiii` or `t7x`, then `docker compose up -d` |
