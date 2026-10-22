@@ -10,9 +10,6 @@ This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framil
 - **Player guide**: how to install EZZBOIII or T7X and connect, including on a Mac. See [Joining a server](#joining-a-server-players).
 - **ARM64 support (work in progress)**: the image is multi-arch. On ARM64 hosts it uses [Hangover](https://github.com/AndreRH/hangover) and Box64, and it is tested on Apple Silicon. See [ARM64 hosts](#arm64-hosts-work-in-progress).
 
-<img width="3840" height="1240" alt="6534a8436e907efb0ced99edd8d02435" src="https://github.com/user-attachments/assets/f40d08e8-6285-423f-baf2-ddb873ed4301" />
-
-
 Simplifying Black Ops 3 server installation for both Steam Black Ops 3 and Custom Clients (like T7X or BOIII). \
 **No copyrighted files are distributed using these scripts.** \
 \
