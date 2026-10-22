@@ -11,20 +11,17 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Steps to reproduce the behavior, and your `docker-compose.yml` (remove passwords).
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Logs**
+The relevant part of `docker logs bo3` (or of `docker compose run --rm bo3 update`).
 
-**BO3 Client used:**
- - T7X/BOIII/Official BO3
+**Server mode:**
+ - `command:` boiii / t7x / vanilla
 
-**Operating System:**
- - OS: [e.g. Arch Linux]
+**Host:**
+ - OS and CPU architecture: [e.g. Debian 13, amd64]
+ - Docker version: [`docker --version`]
 
 **Additional context**
 Add any other context about the problem here.

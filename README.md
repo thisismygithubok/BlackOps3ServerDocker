@@ -1,62 +1,25 @@
 # BlackOps3ServerInstaller
 
-## What this fork adds
-This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller). It keeps the original Windows and Linux scripts and adds a Docker setup, aimed at hosting **Zombies** servers:
+A Docker image for hosting **Call of Duty: Black Ops 3** servers, aimed at **Zombies**. One container runs [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide), [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2) or Treyarch's official dedicated server under Wine.
 
-- **Docker image** [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker): Wine, DepotDownloader, this repo's configs and the EZZBOIII files in one image. One container runs EZZBOIII, T7X or Treyarch's official server. See [How to run with Docker](#how-to-run-with-docker-linux-amd64).
-- **Server settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`, without editing `.cfg` files.
-- **Maps and mods downloaded for you**: list the maps in `MAPS` and Workshop items in `WORKSHOP_MAPS` / `MOD_ID`, and `install` / `update` fetch exactly those files with [DepotDownloader](https://github.com/SteamRE/DepotDownloader) from your own Steam license, without downloading the full game.
-- **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs for all three clients.
+Image: [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker) (amd64; arm64 is a [work in progress](#arm64-hosts-work-in-progress)).
+
+**No copyrighted files are distributed.** The container downloads the game files with your own Steam account.
+
+- **Maps and mods downloaded for you**: list the maps in `MAPS` and Workshop items in `WORKSHOP_MAPS` / `MOD_ID`. Then `install` / `update` fetch exactly those files with [DepotDownloader](https://github.com/SteamRE/DepotDownloader) from your Steam license, without downloading the full game. A Zombies server needs about 1.3 GB plus its maps.
+- **Settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`.
+- **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs.
 - **Player guide**: how to install EZZBOIII or T7X and connect, including on a Mac. See [Joining a server](#joining-a-server-players).
-- **ARM64 support (work in progress)**: the image is multi-arch. On ARM64 hosts it uses [Hangover](https://github.com/AndreRH/hangover), and it is tested on Apple Silicon. See [ARM64 hosts](#arm64-hosts-work-in-progress).
 
-Simplifying Black Ops 3 server installation for both Steam Black Ops 3 and Custom Clients (like T7X or BOIII). \
-**No copyrighted files are distributed using these scripts.** \
-\
-This repository merges configurations and scripts from these projects:\
-[T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2)\
-[EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide)\
-[T7 Configuration files](https://github.com/Dss0/t7-server-config)\
-[BOIIIEasyServer](https://github.com/rcv11x/BOIIIEasyServer)
+This is a fork of [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller), which also has script installs for Windows and Linux.
 
-**You can create servers on both Linux-based platforms and Windows.**
-
-**There doesn't seem to be a way to run zombies server using the official BO3 Server Launcher. Currently zombies servers are only available using custom clients**
-
-## Table of Contents  
-- [How to install on Windows](#how-to-install-on-windows)
-- [How to install on Linux (Ubuntu, Debian, Arch)](#how-to-install-on-linux-ubuntu-debian-arch)
-- [How to run with Docker (Linux amd64)](#how-to-run-with-docker-linux-amd64)
+## Table of Contents
+- [Hosting a server](#hosting-a-server)
 - [Joining a server (players)](#joining-a-server-players)
-- [EZZBOIII Server Additional Steps](#ezzboiii-server-additional-steps)
-- [Cool, but Zombies?](#cool-but-zombies)
-- [Mods?](#mods)
-- [Custom Maps?](#custom-maps)
-- [Notes](#notes)
+- [Credits](#credits)
 
-## How to install on Windows
-1. Clone this repository wherever you want to install the server
-2. Double click on `server_files_downloader.bat`
-3. Wait for server files to download through [steamcmd](https://developer.valvesoftware.com/wiki/SteamCMD)
-4. Wait for the custom clients executable to download  (currently [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2) or [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide))
-5. **(For Custom Clients)** You can now edit `CustomClient_Server.bat` and `zone/server.cfg` (or `zone/server_cp.cfg` or `zone/server_zm.cfg`) with your desired settings
-6. **(For Custom Clients)** Launch your server using `CustomClient_Server.bat boiii` if you want to use EZBOIII or `CustomClient_Server.bat t7x` if you want to use T7X
-7. **(For official servers on vanilla BO3)** Launch your server using `Launch_Server.bat`
-5. Done!
-
-## How to install on Linux (Ubuntu, Debian, Arch)
-Official BO3 servers only aimed for Windows support, but [Wine](https://www.winehq.org/) can help us run it on Linux too.
-1. Clone this repository wherever you want to install the server
-2. Make `server_files_downloader.sh` executable using `chmod +x` and execute it with `./server_files_downloader.sh ubuntu` (note, I currently support `ubuntu`, `debian` and `arch`). Example, if you're on arch just type `./server_files_downloader.sh arch`
-3. Follow the setup "wizard" and confirm a bunch of wine required steps. Wait for server files to download through [steamcmd](https://developer.valvesoftware.com/wiki/SteamCMD)
-4. Wait for the custom clients executable to download  (currently [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2) or [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide))
-5. **(For Custom Clients)** Make `CustomClient_Server.sh` executable using `chmod +x`. Edit your `CustomClient_Server.sh` and `zone/server.cfg` (or `zone/server_cp.cfg` or `zone/server_zm.cfg`) with your desired settings
-6. **(For Custom Clients)** Launch your server using `CustomClient_Server.sh boiii` if you want to use EZBOIII or `CustomClient_Server.sh t7x` if you want to use T7X
-7. **(For official servers on vanilla BO3)** Launch your server using `Launch_Server.sh`
-5. Done!
-
-## How to run with Docker (Linux amd64)
-A ready-made image, [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynameok/bo3-server-docker), runs the server under Wine on any x86-64 Linux host (ARM64 support is [a work in progress](#arm64-hosts-work-in-progress)). It includes Wine, DepotDownloader, this repo's configs and the EZZBOIII files. Game files are **not** in the image: the container downloads them with your own Steam account. This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
+## Hosting a server
+This section sets up a **Zombies** server. For multiplayer, use `server.cfg` instead of `server_zm.cfg`.
 
 ### What you need
 - An x86-64 Linux host with Docker and Docker Compose (or an ARM64 host, see [ARM64 hosts](#arm64-hosts-work-in-progress))
@@ -178,7 +141,7 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 | Update server files, maps and clients | `docker compose run --rm bo3 update && docker compose restart` |
 | Update the image | `docker compose pull && docker compose up -d` |
 | Switch client | Change `command:` to `boiii` or `t7x`, then `docker compose up -d` |
-| Load a Workshop mod | Set `MOD_ID: "<Workshop ID>"`, then `docker compose run --rm bo3 update && docker compose up -d` |
+| Load a Workshop mod | Set `MOD_ID: "<Workshop ID>"`, then `docker compose run --rm bo3 update && docker compose up -d`. The mod is installed in `mods/<id>/` |
 
 `command: vanilla` runs Treyarch's official server under a virtual display. It is multiplayer-only and can't host Zombies.
 
@@ -230,67 +193,10 @@ The native macOS version of Black Ops 3 can't run these clients. Use [CrossOver]
 
 Performance depends on your Mac. If the game doesn't start, change the bottle's graphics backend from D3DMetal to DXVK.
 
-## EZZBOIII Server Additional Steps
-*Only for the Windows/Linux script installs. The Docker image does this automatically.*
-
-EZZBOIII requires some additional files in your `%APPDATA%/Local` folder to create a new server. Extract [`boiii-server-files.zip`](https://github.com/framilano/BlackOps3ServerInstaller/blob/main/boiii-server-files.zip) and move the extracted `boiii` folder:
-- Windows: in your `%APPDATA%/Local` folder
-- Linux: open your wine prefix and copy the `boiii` folder in `AppData/Local` folder present in it
-
-## Cool, but Zombies?
-*Docker: you need the same files, but the container downloads them for the maps in `MAPS`. See [2. Download the server and map files](#2-download-the-server-and-map-files).*
-
-The default server files only downloads MP-ready stuff. To serve a Zombies server you need to copy these fast files
-from your BO3 game files and put them into `zone`:
-
-```
-zone/en_zm_patch.ff
-zone/en_zm_common.ff
-zone/en_zm_levelcommon.ff
-zone/zm_patch.ff
-zone/zm_common.fd
-zone/zm_common.ff
-zone/zm_levelcommon.ff
-```
-Let's say you want to create a Shadows of Evil server, you need to copy these fast files too.
-```
-zone/en_zm_zod.ff
-zone/en_zm_zod_patch.ff
-zone/zm_zod.ff
-zone/zm_zod.fd
-zone/zm_zod_patch.ff
-```
-
-## Mods?
-*Docker: set `MOD_ID: "<Workshop ID>"` in `docker-compose.yml` and run `update`. The container downloads the mod into `mods/<id>/`, so you don't need to copy it or edit `CustomClient_Server.bat`.*
-
-There's a difference between Custom Maps and Mods, this section will explain how to load a mod downloaded from the Steam Workshop.
-Let's say you subscribed to the [The Kermit Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=1638465081), this will create a folder in your Steam folder in `steamapps/workshop/content/311210/1638465081`, create a new `mods` folder inside the root of your server folder (in UnrankedServer) and copy the folder named `1638465081` (this number changes depending on the mod) inside it. The resulting folders structure should look like this:
-
-![immagine](https://github.com/user-attachments/assets/23843aca-0bd8-4dbc-8cfe-8dba4eba12c0)
-
-Now modify the `set ModFolderName=` in `CustomClient_Server.bat` into `set ModFolderName=1638465081`, that's it, you're done!
-
-## Custom Maps?
-*Docker: see [Hosting custom maps](#hosting-custom-maps). The container downloads Workshop maps into the same folder layout.*
-
-This section will explain how to load custom maps downloaded from the Steam Workshop.
-Let's say you downloaded the [Mob of the Dead](https://steamcommunity.com/sharedfiles/filedetails/?id=3373649394) custom map and want to host a server with it, create the `usermaps` folder inside the root of your server folder (in UnrankedServer) and create a folder within it called `zm_prison` (the map codename, easily guess the name from the map gamefiles), put all map files inside this folder.
-
-![Screenshot_2025-05-10_22-47-36](https://github.com/user-attachments/assets/002f790f-9843-4288-8fb4-67c929bb4f61)
-
-Edit `server_zm.cfg` and add in map rotation `zm_prison`
-
-`set sv_maprotation "gametype zclassic map zm_prison"`
-
-That's it
-
-
-## Notes
-1. Unless you're playing LAN with friends, you need to port forward you router and open the ports used by your server in Windows Firewall.
-2. If you don't need any custom client, just delete `t7x.exe` or `boiii.exe`. *(Script installs only: in Docker, `update` downloads them again.)*
-3. Remember to change the port in `CustomClient_Server.bat` if you're launching the server in the same machine where you're playing Black Ops 3. *(Docker: set `GAME_PORT` in `docker-compose.yml`.)*
-4. To save space, you can delete any unused fast files in `UnrankedServer/zone`
-5. **(For Custom Clients)** To customise your server maps rotation and gamemodes just edit the files in `UnrankedServer/zone`, `server_zm.cfg` changes zombies configuration, `server.cfg` changes multiplayer configurations, `server_cp.cfg` changes coop campaign configuration.
-These files can be executed even with the vanilla `Launch_Server.bat` or `Launch_Server.sh` but you need to edit these first to execute the desired .cfg file. *(Docker: choose the file with `SERVER_CONFIG` in `docker-compose.yml`.)*
-6. If you're trying to host on a Linux ARM64 machine, you should check out [Hangover](https://github.com/AndreRH/hangover), pair it with wine and you're done! *(Docker: the image's arm64 variant already does this, see [ARM64 hosts](#arm64-hosts-work-in-progress).)*
+## Credits
+The server configs come from these projects:
+- [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2)
+- [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide)
+- [T7 Configuration files](https://github.com/Dss0/t7-server-config)
+- [BOIIIEasyServer](https://github.com/rcv11x/BOIIIEasyServer)
+- [framilano/BlackOps3ServerInstaller](https://github.com/framilano/BlackOps3ServerInstaller)
