@@ -139,7 +139,7 @@ The first start takes a little longer while the Wine prefix is created. The serv
 
 ### Hosting custom maps
 1. Find the map on the [Steam Workshop](https://steamcommunity.com/app/311210/workshop/) and copy the number at the end of its URL (`?id=<number>`).
-2. Add it to `WORKSHOP_MAPS` in `docker-compose.yml` (separate several IDs with spaces), then run `docker compose run --rm bo3 update`. The map is installed as `usermaps/<codename>/`, and `update` prints the codename.
+2. Add it to `WORKSHOP_MAPS` in `docker-compose.yml` (separate several IDs with spaces), then run `docker compose run --rm bo3 update`. The map is installed as `usermaps/<codename>/`, and `update` prints the codename (`Workshop item <id> installed as usermaps/<codename>`). To look it up later, list the folders: `ls server/UnrankedServer/usermaps/`.
 3. Put the codename in `MAPS` and run `docker compose up -d`.
 
 Every player needs the same map, in the same version. See [Joining a server](#joining-a-server-players). If the server stays in the lobby instead of loading a custom map, set `SKIP_LOBBY: "0"`.
