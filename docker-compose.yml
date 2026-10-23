@@ -2,7 +2,8 @@ services:
   bo3:
     image: thisismynameok/bo3-server-docker:latest
     container_name: bo3
-    network_mode: host        # recommended: no port mapping needed
+    ports:
+      - "27017:27017/udp"     # the game uses UDP only; for the browser's LAN tab use network_mode: host instead
     init: true                # forwards docker stop to wine
     stdin_open: true          # `docker attach bo3` for the server console (detach: Ctrl-P Ctrl-Q)
     tty: true
@@ -19,7 +20,7 @@ services:
       # WORKSHOP_MAPS: ""       # Workshop IDs of custom maps; put their codenames in MAPS
       # Server settings, override SERVER_CONFIG (apply with `docker compose up -d`)
       SERVER_NAME: "My Zombies Server"
-      # Optional, defaults come from SERVER_CONFIG. All env vars are listed in the README (step 4).
+      # Optional, defaults come from SERVER_CONFIG. All env vars are listed in the README (step 3).
       # SERVER_PASSWORD: "secret"
       # RCON_PASSWORD: ""
       # MAX_PLAYERS: "4"

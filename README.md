@@ -24,7 +24,7 @@ This section sets up a **Zombies** server. For multiplayer, use `server.cfg` ins
 ### What you need
 - An x86-64 Linux host with Docker and Docker Compose (or an ARM64 host, see [ARM64 hosts](#arm64-hosts-work-in-progress))
 - A Steam account that owns Black Ops 3, plus the DLC for any DLC maps you want to host. Anonymous Steam login is refused for the server files.
-- UDP and TCP port `27017` forwarded to the host on your router, if people join over the internet
+- UDP port `27017` forwarded to the host on your router, if people join over the internet
 
 ### 1. Set up the service
 ```bash
@@ -37,7 +37,8 @@ services:
   bo3:
     image: thisismynameok/bo3-server-docker:latest
     container_name: bo3
-    network_mode: host        # recommended: no port mapping needed
+    ports:
+      - "27017:27017/udp"     # the game uses UDP only
     init: true
     stdin_open: true          # `docker attach bo3` for the server console (detach: Ctrl-P Ctrl-Q)
     tty: true
@@ -60,11 +61,11 @@ services:
       - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
       - ./home:/home/bo3      # Wine prefix + cached Steam login
 ```
-If you can't use host networking, remove `network_mode` and add `ports: ["27017:27017/udp", "27017:27017/tcp"]`. With port mapping, the server doesn't show up in the server browser's LAN tab.
+Publish the port as `/udp`: a plain `"27017:27017"` maps TCP only, and players can't connect. Docker's port mapping bypasses ufw, so no firewall rule is needed.
 
-With host networking, the host firewall applies to the game port. Docker's port mapping bypasses ufw, but `network_mode: host` doesn't. With ufw, allow the port:
+To have the server show up in the server browser's **LAN** tab too, use `network_mode: host` instead of `ports:` (LAN discovery broadcasts don't reach a container behind port mapping). The host firewall then applies, so with ufw allow the port:
 ```bash
-sudo ufw allow 27017 comment 'BO3 Server'   # TCP and UDP
+sudo ufw allow 27017/udp comment 'BO3 Server'
 ```
 
 **Not in the server browser?** The server registers with EZZBOIII's master servers by sending a heartbeat from port 27017. Some routers change the source port of that outgoing traffic, even with a port forward in place. The master servers then list your server on a random port that nobody can reach, and the browser leaves it out, while `connect <ip>:27017` still works. To fix it, add a **source NAT** rule on your router that keeps the port for the server's outgoing UDP:
@@ -162,7 +163,7 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 The image is multi-arch: on an ARM64 host, Docker pulls the arm64 variant automatically, and the setup above stays the same. Inside, [Hangover](https://github.com/AndreRH/hangover) runs the x86-64 game (Wine with FEX emulation), and DepotDownloader has a native arm64 build.
 
 - **Tested:** on an Apple Silicon Mac with Docker Desktop, both `boiii` and `t7x` load Revelations (`zm_genesis`) and listen on the game port. At idle the server uses about a third of a CPU core and 2 GB of RAM.
-- **On Docker Desktop (Mac)**, `network_mode: host` only works if host networking is enabled in Docker Desktop's settings. Otherwise use the `ports:` mapping.
+- **On Docker Desktop (Mac)**, `network_mode: host` only works if host networking is enabled in Docker Desktop's settings. The default `ports:` mapping works without it.
 - **Not supported:** `command: vanilla`. The arm64 variant has no virtual display.
 - **Not tested yet:** players joining and playing, a full `install` with a Steam login inside the arm64 image, and ARM Linux servers such as Ampere or Graviton.
 - **Don't force the amd64 image** (`platform: linux/amd64`) on a Mac. Docker Desktop's Rosetta emulation can't run it.
