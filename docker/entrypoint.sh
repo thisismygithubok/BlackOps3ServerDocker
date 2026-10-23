@@ -138,7 +138,12 @@ prepare_wine() {
             setting "${pair#*=}" "${pair%%=*}"
         done
         if [ -n "${MAPS:-}" ]; then
-            echo "set sv_maprotation \"gametype ${GAME_MODE:?Set GAME_MODE (e.g. zclassic) together with MAPS}$(printf ' map %s' $MAPS)\""
+            local maps=($MAPS)
+            echo "set sv_maprotation \"gametype ${GAME_MODE:?Set GAME_MODE (e.g. zclassic) together with MAPS}$(printf ' map %s' "${maps[@]}")\""
+            # The lobby script starts the first map itself, so continue the rotation after it (else it plays twice)
+            if [ ${#maps[@]} -gt 1 ]; then
+                echo "set sv_mapRotationCurrent \"gametype $GAME_MODE$(printf ' map %s' "${maps[@]:1}")\""
+            fi
         fi
         # SET_<setting>=<value>: any other setting
         for var in $(compgen -e | grep '^SET_'); do
