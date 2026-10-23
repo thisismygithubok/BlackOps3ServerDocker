@@ -1,4 +1,4 @@
-# BlackOps3ServerInstaller
+# BlackOps3ServerDocker
 
 A Docker image for hosting **Call of Duty: Black Ops 3** servers, aimed at **Zombies**. One container runs [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide), [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2) or Treyarch's official dedicated server under Wine.
 
