@@ -60,7 +60,12 @@ services:
       - ./server:/server      # game files + configs (server/UnrankedServer/zone/server_zm.cfg)
       - ./home:/home/bo3      # Wine prefix + cached Steam login
 ```
-If you can't use host networking, remove `network_mode` and add `ports: ["27017:27017/udp", "27017:27017/tcp"]`.
+If you can't use host networking, remove `network_mode` and add `ports: ["27017:27017/udp", "27017:27017/tcp"]`. With port mapping, the server doesn't show up in the server browser's LAN tab.
+
+With host networking, the host firewall applies to the game port. Docker's port mapping bypasses ufw, but `network_mode: host` doesn't. With ufw, allow the port:
+```bash
+sudo ufw allow 27017 comment 'BO3 Server'   # TCP and UDP
+```
 
 ### 2. Download the server and map files
 ```bash
