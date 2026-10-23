@@ -155,7 +155,7 @@ Every player needs the same map, in the same version. See [Joining a server](#jo
 | Update server files, maps and clients | `docker compose run --rm bo3 update && docker compose restart` |
 | Update the image | `docker compose pull && docker compose up -d` |
 | Switch client | Change `command:` to `boiii` or `t7x`, then `docker compose up -d` |
-| Load a Workshop mod | Set `MOD_ID: "<Workshop ID>"`, then `docker compose run --rm bo3 update && docker compose up -d`. The mod is installed in `mods/<id>/` |
+| Load a Workshop mod | Set `MOD_ID: "<Workshop ID>"`, then `docker compose run --rm bo3 update && docker compose up -d`. The mod is installed in `mods/<id>/`. It must support the custom clients; some mods say they only work with the regular game |
 
 `command: vanilla` runs Treyarch's official server under a virtual display. It is multiplayer-only and can't host Zombies.
 

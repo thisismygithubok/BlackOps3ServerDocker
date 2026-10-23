@@ -128,6 +128,10 @@ prepare_wine() {
             exit 1
         }
     done
+    if [ -n "${MOD_ID:-}" ] && [ ! -d "mods/$MOD_ID" ]; then
+        echo "Mod $MOD_ID has no files. Run: docker compose run --rm bo3 update" >&2
+        exit 1
+    fi
     # The game writes its console to files, not stdout: mirror them into `docker logs`
     tail -n0 -F identities/dedicatedpc/console_mp.log boiii/games_{mp,zm,cp}.log 2>/dev/null &
     # Settings from env vars override SERVER_CONFIG. They go in a generated cfg that runs it first:
