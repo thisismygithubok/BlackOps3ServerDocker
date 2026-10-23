@@ -67,6 +67,14 @@ With host networking, the host firewall applies to the game port. Docker's port 
 sudo ufw allow 27017 comment 'BO3 Server'   # TCP and UDP
 ```
 
+**Not in the server browser?** The server registers with EZZBOIII's master servers by sending a heartbeat from port 27017. Some routers change the source port of that outgoing traffic, even with a port forward in place. The master servers then list your server on a random port that nobody can reach, and the browser leaves it out, while `connect <ip>:27017` still works. To fix it, add a **source NAT** rule on your router that keeps the port for the server's outgoing UDP:
+- Protocol: UDP
+- Source: the server's LAN IP, port `27017`
+- Destination: any
+- Translate to: your public IP, port unchanged
+
+On UniFi (Network 9/10) that's a Policy Table → NAT policy of type **Source NAT**. To check what the master servers see, send `\xff\xff\xff\xffgetservers T7 8 full empty` over UDP to `master.ezz.lol:20810` and look for your public IP:port in the reply.
+
 ### 2. Download the server and map files
 ```bash
 docker compose run --rm bo3 install
