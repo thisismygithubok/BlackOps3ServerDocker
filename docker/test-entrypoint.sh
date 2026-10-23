@@ -24,13 +24,16 @@ if (MAPS=zm_genesis gen) 2>/tmp/err; then echo "FAIL MAPS without GAME_MODE shou
 fl=$(MAPS="zm_genesis mp_spire zm_prison" zombies_filelist)
 check "shared zombies files" 'regex:^zone/(en_)?zm_(patch|common|levelcommon)\.f[fd]$' "$fl"
 check "map line" 'regex:^zone/(en_)?zm_genesis(_patch)?\.f[fd]$' "$fl"
-[ "$(wc -l <<<"$fl")" -eq 3 ] && echo "ok   one line per zm_ map, mp_ skipped"
+check "map sound bank line" 'regex:^zone/snd/(all|en)/zm_genesis(_patch)?\.(all|en)(\.p)?\.sab[ls]$' "$fl"
+[ "$(wc -l <<<"$fl")" -eq 7 ] && echo "ok   two lines per zm_ map plus three shared, mp_ skipped"
 # the regexes must match the real file names and nothing else
 matches() { local l; while read -r l; do [[ $1 =~ ${l#regex:} ]] && return 0; done <<<"$fl"; return 1; }
-for f in zone/zm_genesis.ff zone/en_zm_genesis.ff zone/zm_genesis_patch.ff zone/zm_genesis.fd zone/zm_common.fd zone/en_zm_levelcommon.ff; do
+for f in zone/zm_genesis.ff zone/en_zm_genesis.ff zone/zm_genesis_patch.ff zone/zm_genesis.fd zone/zm_common.fd zone/en_zm_levelcommon.ff \
+         zone/snd/all/zm_genesis.all.sabs zone/snd/all/zm_genesis.all.p.sabl zone/snd/all/zm_common.all.sabl zone/snd/all/zm_patch.all.sabs \
+         zone/snd/en/zm_genesis.en.sabs zone/snd/en/core_post_gfx.en.sabs zone/snd/all/core_post_gfx.all.p.sabs zone/snd/en/core_frontend_patch.en.sabs; do
   matches "$f" || { echo "FAIL $f not matched"; exit 1; }
 done
-for f in zone/zm_genesis_other.ff zone/mp_spire.ff zone/zm_zod.ff zone/core_common.ff; do
+for f in zone/zm_genesis_other.ff zone/mp_spire.ff zone/zm_zod.ff zone/core_common.ff zone/snd/fr/zm_genesis.fr.sabs zone/snd/all/zm_zod.all.sabl zone/snd/all/mp_common.all.sabs zone/snd/en/cp_common.en.sabs; do
   ! matches "$f" || { echo "FAIL $f wrongly matched"; exit 1; }
 done
 echo "ok   filelist matches exactly the right files"

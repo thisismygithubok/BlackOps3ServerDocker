@@ -6,7 +6,7 @@ Image: [`thisismynameok/bo3-server-docker`](https://hub.docker.com/r/thisismynam
 
 **No copyrighted files are distributed.** The container downloads the game files with your own Steam account.
 
-- **Maps and mods downloaded for you**: list the maps in `MAPS` and Workshop items in `WORKSHOP_MAPS` / `MOD_ID`. Then `install` / `update` fetch exactly those files with [DepotDownloader](https://github.com/SteamRE/DepotDownloader) from your Steam license, without downloading the full game. A Zombies server needs about 1.3 GB plus its maps.
+- **Maps and mods downloaded for you**: list the maps in `MAPS` and Workshop items in `WORKSHOP_MAPS` / `MOD_ID`. Then `install` / `update` fetch exactly those files with [DepotDownloader](https://github.com/SteamRE/DepotDownloader) from your Steam license, without downloading the full game. A Zombies server needs about 5 GB plus its maps (Revelations: about 7 GB in total).
 - **Settings as env vars**: server name, password, max players, game mode, maps and every other setting from the configs can be set in `docker-compose.yml`.
 - **Server console in `docker logs`**: the game's console and game logs are mirrored into the container logs.
 - **Player guide**: how to install EZZBOIII or T7X and connect, including on a Mac. See [Joining a server](#joining-a-server-players).
@@ -68,7 +68,7 @@ docker compose run --rm bo3 install
 ```
 This asks for your Steam password and Steam Guard code once, then downloads:
 - the dedicated server files. A Zombies or campaign server skips the multiplayer maps (2.8 GB of the 4.4 GB). Those are downloaded only for `server.cfg` or when `MAPS` contains an `mp_` map.
-- the Zombies files for each stock map in `MAPS`, from your Black Ops 3 license (only those files, not the whole game)
+- the Zombies files and sound banks for each stock map in `MAPS`, from your Black Ops 3 license (only those files, not the whole game). The server needs the sound banks to reload a map, for example to start a new match after the last player leaves.
 - the custom maps in `WORKSHOP_MAPS` and the mod in `MOD_ID` (see [Hosting custom maps](#hosting-custom-maps))
 - both clients (`boiii.exe`, `t7x.exe`)
 

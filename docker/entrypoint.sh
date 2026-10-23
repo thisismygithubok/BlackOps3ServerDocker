@@ -9,17 +9,23 @@ steam_download() {
     DepotDownloader -username "${STEAM_USER:?Set STEAM_USER to a Steam account that owns Black Ops 3}" -remember-password -os windows "$@"
 }
 
-# DepotDownloader filelist for the Zombies maps in MAPS: the shared Zombies files plus each zm_ map's files.
+# DepotDownloader filelist for the Zombies maps in MAPS: fast files plus the sound banks (zone/snd/all and
+# zone/snd/en) of the core zones, the shared Zombies zones and each zm_ map. The first map load works without
+# sound banks, but reloading the map (map_rotate after the last player leaves) crashes without them.
 # Custom map codenames just match nothing here; they come from WORKSHOP_MAPS.
 zombies_filelist() {
     local map lines=""
     for map in ${MAPS:-}; do
         if [[ $map == zm_* ]]; then
             lines+="regex:^zone/(en_)?${map}(_patch)?\.f[fd]\$"$'\n'
+            lines+="regex:^zone/snd/(all|en)/${map}(_patch)?\.(all|en)(\.p)?\.sab[ls]\$"$'\n'
         fi
     done
     if [ -n "$lines" ]; then
-        printf 'regex:^zone/(en_)?zm_(patch|common|levelcommon)\\.f[fd]$\n%s' "$lines"
+        printf '%s\n' 'regex:^zone/(en_)?zm_(patch|common|levelcommon)\.f[fd]$' \
+            'regex:^zone/snd/(all|en)/zm_(patch|common|levelcommon)\.(all|en)(\.p)?\.sab[ls]$' \
+            'regex:^zone/snd/(all|en)/core_[a-z_]+\.(all|en)(\.p)?\.sab[ls]$'
+        printf '%s' "$lines"
     fi
 }
 
