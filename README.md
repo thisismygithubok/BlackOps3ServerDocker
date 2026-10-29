@@ -1,9 +1,9 @@
 # BlackOps3ServerDocker
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/thisismynameok/bo3-server-docker)](https://hub.docker.com/r/thisismynameok/bo3-server-docker)
-[![Docker Stars](https://img.shields.io/docker/stars/thisismynameok/bo3-server-docker)](https://hub.docker.com/r/thisismynameok/bo3-server-docker)
-[![amd64 size](https://img.shields.io/docker/image-size/thisismynameok/bo3-server-docker/latest?arch=amd64&label=amd64)](https://hub.docker.com/r/thisismynameok/bo3-server-docker/tags)
-[![arm64 size](https://img.shields.io/docker/image-size/thisismynameok/bo3-server-docker/latest?arch=arm64&label=arm64)](https://hub.docker.com/r/thisismynameok/bo3-server-docker/tags)
+<a href="https://hub.docker.com/r/thisismynameok/bo3-server-docker"><img alt="amd64 image size" src="https://img.shields.io/docker/image-size/thisismynameok/bo3-server-docker/latest?arch=amd64&label=amd64&style=for-the-badge">
+<img alt="arm64 image size" src="https://img.shields.io/docker/image-size/thisismynameok/bo3-server-docker/latest?arch=arm64&label=arm64&style=for-the-badge">
+<img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/thisismynameok/bo3-server-docker?style=for-the-badge"></a>
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/thisismygithubok/BlackOps3ServerDocker?color=brightgreen&style=for-the-badge">
 
 A Docker image for hosting **Call of Duty: Black Ops 3** servers, aimed at **Zombies**. One container runs [EZZBOIII](https://forum.ezz.lol/topic/5/bo3-guide), [T7X](https://forum.alterware.dev/t/how-to-install-the-t7x-client/1418/2) or Treyarch's official dedicated server under Wine.
 
